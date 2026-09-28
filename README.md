@@ -1,98 +1,147 @@
 # Research on AI Chatbots
 
-A hands-on research project exploring how language-model chatbots work by building their components in Python and PyTorch. The project starts with tensors and training loops, then progresses toward tokenization, Transformers, retrieval, and deployment.
+A hands-on Python and PyTorch research project exploring tokenization, embeddings, causal attention, Transformer training, and text generation.
 
-## Current status
+**Last updated:** September 27, 2026  
+**Working branch:** develop
 
-- Successfully trained a linear model on CPU to learn `y = 3*x + 2`.
-- Implemented tensor and autograd exercises; their final test confirmation is pending.
-- Ran a minimal character-level Transformer and generated text in a terminal.
-- The Transformer is an exploratory demonstration. The staged implementation and understanding checks remain in progress.
+See [Progess.md](Progess.md) for the full roadmap, experiment settings, loss history, limitations, and the preserved original report.
 
-The complete learning plan and progress report are in [Progess.md](Progess.md).
+## Current progress
 
-## Findings so far
-
-### 1. A training loop can learn a simple relationship
-
-The linear model began with a loss of `3.060877`. Its final learned parameters were:
-
-| Measurement | Recorded result | Target |
-|---|---|---|
-| Weight | 2.9999983310699463 | 3 |
-| Bias | 1.999999761581421 | 2 |
-| Prediction for x = 2 | 8.0000 | 8 |
-
-The training assertions passed. Loss printed as `0.000000` is rounded, not evidence of an exactly zero error. This experiment verifies the basic training pipeline; it does not establish language-model capability.
-
-### 2. Text generation does not guarantee useful conversation
-
-The tiny Transformer generated fragments resembling its training corpus, including phrases about its name and learning about Transformers. It also produced malformed words and continued prompts instead of reliably answering them.
-
-These observations are consistent with memorization of a very small corpus. There is no held-out evaluation yet, so generalization has not been demonstrated.
-
-### 3. Tokenizer coverage affects whether input is accepted
-
-A prompt containing `?` caused `KeyError: '?'` because the character was absent from the training vocabulary. The current encoder looks up every character directly in a dictionary. An unsupported-character guard was proposed but is not present in the current `minimal_chatbot.py`.
-
-This motivates testing punctuation, uppercase text, Unicode, and vocabulary coverage when building the tokenizer.
-
-### 4. Training and inference need separate handling
-
-Code review identified that the demonstration retrains on each launch, has no checkpoint-loading path, and does not switch to evaluation mode before chatting. It also uses independent prompts without conversation history.
-
-Planned improvements include saving checkpoints, calling `model.eval()` for generation, and managing conversation context. These are pending changes, not completed features.
-
-### 5. The Python environment matters
-
-Using a different Python executable produced `ModuleNotFoundError: No module named 'torch'`. Running through the project's virtual environment resolved that problem. Installation and execution commands below use the same interpreter.
-
-## Project files
-
-| File | Purpose |
+| Component | Verified result |
 |---|---|
-| [Progess.md](Progess.md) | Detailed roadmap, milestones, and progress report |
-| [exercises.py](lessons/01_pytorch/exercises.py) | Tensor, autograd, and linear-model training exercises |
-| [minimal_chatbot.py](minimal_chatbot.py) | Tiny character-level Transformer training and terminal generation demo |
+| PyTorch training loop | Linear model learned weight approximately 3 and bias approximately 2. |
+| Byte-level BPE | All six test groups passed, including Unicode round trips and save/load. |
+| Library comparison | Custom BPE and Hugging Face Tokenizers both used 276-entry vocabularies and passed sample round trips. |
+| Embeddings | Token lookup, learned/sinusoidal positions, and gradient checks passed. |
+| Attention | Custom single-head and multi-head causal and gradient checks passed. |
+| Transformer decoder | Memorized a tiny sequence with loss 0.001536 and 100% training-token accuracy. |
+| Language-model training | Trained on Tiny Shakespeare, resumed from 200 to 1,000 steps, and verified checkpoint reload. |
+| Terminal generation | Loaded saved weights and compared greedy with temperature/top-p decoding. |
 
-## Setup on Windows
+The nn.MultiheadAttention reference comparison remains unconfirmed. Retrieval, conversation memory, API/Docker work, and deployment are pending.
 
-From the repository root in PowerShell, with Python installed:
+## Research findings
+
+### Token coverage and learned merges
+
+Our custom tokenizer starts with 256 byte tokens and learns 20 merges. Both tokenizers reconstructed punctuation, accented text, emoji, and empty input correctly.
+
+| Text | UTF-8 bytes | Custom BPE tokens | Library BPE tokens |
+|---|---:|---:|---:|
+| hello world | 11 | 4 | 4 |
+| Hello? | 6 | 5 | 5 |
+| café 🤖 | 10 | 10 | 10 |
+| Empty text | 0 | 0 | 0 |
+
+Token IDs are tokenizer-specific. Matching counts on these samples do not imply identical vocabularies or behavior on every input. The separate code_tokenize project was reviewed as a syntax-analysis reference, not adopted as our BPE tokenizer.
+
+### Learning and generalization are different from memorization
+
+The small decoder reproduced hello world on four lines exactly. That was an overfitting check. The larger experiment used held-out text to measure next-byte prediction:
+
+| Step | Training loss | Validation loss |
+|---|---:|---:|
+| 0 | 5.7875 | 5.7791 |
+| 100 | 3.4313 | 3.4336 |
+| 200 | 3.0636 | 3.0554 |
+| 1,000 | 2.5064 | 2.4755 |
+
+Both losses improved, without an obvious overfitting gap in the fixed evaluation batches. This does not establish fluent generation or performance on a final independent test set.
+
+### Sampling changes outputs without changing model knowledge
+
+With the same step-1,000 checkpoint and ROMEO prompt, greedy decoding repeated the, while temperature 0.8 and top-p 0.9 produced more varied but mostly malformed text. Sampling reduced repetition in this example; it did not make the model a reliable assistant.
+
+## Baseline configuration
+
+- Dataset: [Tiny Shakespeare](https://github.com/karpathy/char-rnn/blob/master/data/tinyshakespeare/input.txt).
+- Contiguous 90/10 text split: 1,003,854 training bytes and 111,540 validation bytes.
+- Tokenizer: fixed 256-byte vocabulary. The custom BPE tokenizer is a separate experiment and is not used in this training run.
+- CPU; context 64 bytes; batch size 8; embedding size 64; four attention heads; two decoder blocks.
+- AdamW; learning rate 0.0003; gradient norm clipped to 1.0.
+- Evaluation every 100 steps on 10 fixed batches per split, without weight updates.
+- Checkpoints save model, optimizer, configuration, completed step, and RNG state. Reload checks passed.
+
+## Local implementation layout
+
+The newer lesson files exist locally but were untracked when this documentation was updated. This documentation-only publication does not include those sources, the dataset, or checkpoints. Commands below describe the current local checkout, not a complete clean-clone installation.
+
+```text
+lessons/
+  01_pytorch/exercises.py
+  02_tokenizer/bpe.py
+  02_tokenizer/compare_tokenizers.py
+  03_embeddings/embeddings.py
+  04_attention/single_head.py
+  04_attention/multi_head.py
+  05_decoder/decoder.py
+  06_training/dataset.py
+  06_training/train.py
+  06_training/data/input.txt
+  06_training/runs/<run>/
+    losses.csv
+    sample_<step>.txt
+    checkpoint.pt
+  07_chat/chat.py
+```
+
+The root minimal_chatbot.py is an earlier character-level demonstration that retrains on startup. Use the staged scripts for the newer checkpoint-based experiment.
+
+## Environment and local commands
+
+Recorded environment: Python 3.11, PyTorch 2.14.0+cpu, Hugging Face Tokenizers 0.23.2. Dependencies are not yet pinned. Use the same virtual-environment interpreter for installation and execution.
 
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install torch --index-url https://download.pytorch.org/whl/cpu
-.\.venv\Scripts\python.exe -m pip install numpy
+.\.venv\Scripts\python.exe -m pip install tokenizers numpy
 ```
 
-The recorded experiments used Python 3.11 and PyTorch `2.14.0+cpu`. Dependencies are not yet pinned; the commands above install the available compatible versions. A GPU is not required for the initial exercises.
+Skip environment creation if already configured. NumPy was missing in the reported runs; its warning did not prevent the checks from passing.
 
-If the virtual environment is already configured, skip setup and use the run commands below.
-
-## Run the exercises
+Run the local exercises:
 
 ```powershell
-.\.venv\Scripts\python.exe lessons/01_pytorch/exercises.py tensors
-.\.venv\Scripts\python.exe lessons/01_pytorch/exercises.py autograd
-.\.venv\Scripts\python.exe lessons/01_pytorch/exercises.py train
+.\.venv\Scripts\python.exe lessons/02_tokenizer/bpe.py
+.\.venv\Scripts\python.exe lessons/02_tokenizer/compare_tokenizers.py
+.\.venv\Scripts\python.exe lessons/03_embeddings/embeddings.py
+.\.venv\Scripts\python.exe lessons/04_attention/single_head.py
+.\.venv\Scripts\python.exe lessons/04_attention/multi_head.py
+.\.venv\Scripts\python.exe lessons/05_decoder/decoder.py
+.\.venv\Scripts\python.exe lessons/06_training/dataset.py
 ```
 
-Each command selects one exercise. Save any completed TODOs before running it.
-
-## Run the Transformer demonstration
+Start a fresh 200-step training run:
 
 ```powershell
-.\.venv\Scripts\python.exe minimal_chatbot.py
+.\.venv\Scripts\python.exe lessons/06_training/train.py --steps 200
 ```
 
-The script trains for 3,000 steps before displaying `you:`. Enter `hello` to try generation, and press Ctrl+C to exit. Use characters present in the training corpus; unsupported characters currently terminate the program. Each restart trains a new model.
+Use the recorded local checkpoint for generation:
 
-## Next research steps
+```powershell
+$checkpoint = ".\lessons\06_training\runs\20260927_204339_675021\checkpoint.pt"
+.\.venv\Scripts\python.exe lessons/07_chat/chat.py --checkpoint "$checkpoint" --temperature 0.8 --top-p 0.9
+```
 
-1. Confirm the remaining PyTorch exercise results and understanding checks.
-2. Implement a byte-level BPE tokenizer and test encode/decode round trips.
-3. Build and test embeddings, positional information, and causal attention.
-4. Train a decoder with held-out evaluation and saved checkpoints.
-5. Add conversation handling, retrieval, an API, and Docker deployment.
+For the comparison, exit with /quit and run:
 
-For each experiment, record the question, configuration, observed results, limitations, and next action in the progress report. Advance through the learning stages after building and testing each one.
+```powershell
+.\.venv\Scripts\python.exe lessons/07_chat/chat.py --checkpoint "$checkpoint" --greedy
+```
+
+Enter the same prompt, such as ROMEO, in both modes. Each prompt is independent. Generation uses the last 64 byte tokens and stops at its length limit. There is no trained end-of-response token, conversation memory, or instruction-following training.
+
+To continue training, choose a total target greater than the checkpoint's completed step count. For example, this resumes the 1,000-step checkpoint for 1,000 additional updates:
+
+```powershell
+.\.venv\Scripts\python.exe lessons/06_training/train.py --resume "$checkpoint" --steps 2000
+```
+
+That extension is an example command; it has not been reported as executed.
+
+## Next milestone
+
+Build and evaluate document retrieval independently in Stage 8. The current generator is weak and has a short context window, so retrieving relevant passages and producing grounded answers must be evaluated separately. See the progress report for remaining verification and later API/deployment work.

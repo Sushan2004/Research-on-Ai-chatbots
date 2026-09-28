@@ -1,5 +1,165 @@
 # Chatbot Research Project — Roadmap and Progress Report
 
+**Updated:** September 27, 2026  
+**Branch:** develop  
+**Repository:** https://github.com/Sushan2004/Research-on-Ai-chatbots
+
+## September 27 progress report
+
+This update records results reported by the learner in terminal output. Source files were inspected for documentation consistency; the experiments were not rerun for this report. The September 25 roadmap is preserved below as historical context. Its old status labels are superseded by this update.
+
+### Milestone status
+
+| Stage | Current evidence and status |
+|---|---|
+| 1. PyTorch fundamentals | Linear training passed previously; separate tensor/autograd terminal confirmations remain unrecorded. |
+| 2. Tokenizer | Custom byte-level BPE and library comparison passed. |
+| 3. Embeddings and positions | Token lookup, learned positions, sinusoidal positions, and gradient checks passed. |
+| 4. Attention | Single-head and custom multi-head shape, causal, and gradient checks passed. PyTorch reference comparison remains unconfirmed; compare_attention.py was not present during this update. |
+| 5. Decoder | Tiny-sequence overfitting and generation passed. |
+| 6. Language-model training | Dataset checks, 200-step baseline, resume to 1,000 steps, and checkpoint reload passed. |
+| 7. Terminal generation | Checkpoint loading, greedy generation, temperature/top-p sampling, and /quit tested. Independent prompts only; conversation memory and dialogue training are not implemented. |
+| 8. Retrieval | Not started. Next proposed experiment is retrieval evaluation independent of this limited generator. |
+| 9. API and Docker | Not started. |
+| 10. Deployment | Not started. |
+
+### 1. Tokenizer implementation and comparison
+
+Implemented encode_bytes, decode_bytes, count_pairs, merge_pair, train_bpe, encode_bpe, decode_bpe, save_tokenizer, and load_tokenizer. All six groups of checks passed: byte encoding, pair counting, pair merging, BPE training, encoding/decoding, and save/load.
+
+The custom tokenizer learned 20 merges on top of 256 base byte tokens, producing a vocabulary of 276. Encoding applies learned rules without changing them. Decoding expands merged tokens into byte sequences before UTF-8 decoding.
+
+Compared with Hugging Face Tokenizers 0.23.2 using the same training text and vocabulary budget, with prefix-space insertion and regex splitting disabled:
+
+| Input | UTF-8 bytes | Custom BPE tokens | Library BPE tokens |
+|---|---:|---:|---:|
+| hello world | 11 | 4 | 4 |
+| Hello? | 6 | 5 | 5 |
+| café 🤖 | 10 | 10 | 10 |
+| Empty string | 0 | 0 | 0 |
+
+Both tokenizers reconstructed all examples exactly. Different token IDs are expected because vocabulary mappings differ. Matching counts on these examples do not prove universal equivalence. The unchanged byte count for café 🤖 shows that the learned rules did not merge its adjacent byte tokens.
+
+Reviewed code_tokenize as a separate research reference: it produces syntax-aware program token objects from syntax trees rather than learning byte-pair vocabulary IDs. It was not integrated into the project.
+
+### 2. Embeddings and positional information
+
+Verified a token table with shape [10, 4], containing 40 parameters. Input [2, 3] became output [2, 3, 4]. Repeated token IDs retrieved identical vectors.
+
+Added an [8, 4] learned position table containing 32 parameters, plus an alternative fixed sinusoidal encoding. Position vectors distinguish occurrences of the same token at different positions. Gradient checks confirmed updates can reach used learned-table rows; unused rows received zero gradients in the probe calculation. These were artificial gradient checks, not semantic embedding training.
+
+### 3. Causal single-head and multi-head attention
+
+Single-head attention passed with output [1, 3, 2]. Custom multi-head attention passed with input/output [2, 5, 8], two heads, and four output features per head.
+
+Each head receives all eight input features and uses its own Q/K/V projections. A causal mask permits zero-based key positions less than or equal to the query position. Changing the final input did not alter earlier outputs. Gradient checks passed.
+
+A weight-matched comparison with nn.MultiheadAttention was supplied as a follow-up, but its execution is not confirmed. Do not report numerical equivalence to PyTorch as tested yet.
+
+### 4. Minimal decoder overfitting
+
+Assembled token and learned position embeddings, two decoder blocks, pre-layer normalization, residual connections, feedforward networks, final normalization, and vocabulary projection. Inputs and targets were shifted by one token for next-token prediction.
+
+| Measurement | Result |
+|---|---:|
+| Final training loss | 0.001536 |
+| Training-token accuracy | 100.00% |
+| Generated text | hello world repeated on four lines |
+
+The exact-generation and overfitting checks passed. This establishes successful memorization of the tiny example, not general language understanding.
+
+### 5. Dataset and training setup
+
+Dataset: [Tiny Shakespeare from karpathy/char-rnn](https://github.com/karpathy/char-rnn/blob/master/data/tinyshakespeare/input.txt).
+
+The text was split contiguously into 90% training and 10% validation before byte encoding and window sampling. Training contained 1,003,854 bytes; validation contained 111,540 bytes. Dataset checks verified [4, 32] input/target batches, one-token shifts, valid byte IDs, and window boundaries.
+
+The larger training run deliberately uses the fixed 256-byte vocabulary, not the learned 276-token BPE vocabulary. Keep this distinction when reproducing the experiment.
+
+| Setting | Value |
+|---|---|
+| Device | CPU |
+| Vocabulary | 256 UTF-8 byte IDs |
+| Context length | 64 byte tokens |
+| Batch size | 8 |
+| Embedding dimension | 64 |
+| Attention heads | 4 |
+| Decoder blocks | 2 |
+| Optimizer | AdamW |
+| Learning rate | 0.0003 |
+| Gradient clipping | Maximum norm 1.0 |
+| Evaluation | Every 100 steps; 10 fixed batches per split |
+| Training seed | 42 |
+| Evaluation batch seed | 123 |
+
+Validation runs used evaluation mode with gradient tracking disabled and did not update weights. The initial run completed 200 optimizer steps. A continuation restored weights, optimizer state, configuration, and random-number-generator state, then performed 800 additional updates to reach step 1,000.
+
+### 6. Recorded loss history
+
+| Step | Training loss | Validation loss |
+|---|---:|---:|
+| 0 | 5.7875 | 5.7791 |
+| 100 | 3.4313 | 3.4336 |
+| 200 | 3.0636 | 3.0554 |
+| 300 | 2.8477 | 2.8193 |
+| 400 | 2.7264 | 2.6969 |
+| 500 | 2.6504 | 2.6172 |
+| 600 | 2.6012 | 2.5714 |
+| 700 | 2.5689 | 2.5387 |
+| 800 | 2.5398 | 2.5156 |
+| 900 | 2.5284 | 2.4949 |
+| 1,000 | 2.5064 | 2.4755 |
+
+Loss declined on both the training and held-out batches. There is no obvious overfitting gap in these measurements, but this is a small fixed validation sample and not an independent final test set.
+
+Greedy samples progressed from random bytes to whitespace and recognizable but repetitive fragments. Validation loss measures prediction given real preceding text, whereas free generation conditions on the model's own outputs. Lower validation loss therefore does not guarantee coherent generated text.
+
+Checkpoint reload checks passed after both runs. The final local checkpoint is:
+
+```text
+lessons/06_training/runs/20260927_204339_675021/checkpoint.pt
+```
+
+Each run also records losses.csv and numbered text samples. Resuming to --steps 1000 means 1,000 total steps, not 1,000 additional steps. The dataset and decoder implementation were kept unchanged for the continuation.
+
+### 7. Terminal generation and decoding experiment
+
+Loaded the step-1,000 checkpoint without retraining. Compared the same ROMEO prompt with greedy decoding and temperature 0.8 / top-p 0.9 sampling.
+
+| Mode | Observation |
+|---|---|
+| Greedy | Began RNTh and repeatedly generated the. |
+| Temperature/top-p | More varied letter and word fragments, but mostly malformed text. |
+
+Sampling reduced repetition in this example. It did not demonstrate fluent language, factual answers, or instruction following. The comparison used one prompt and one sampled continuation, so it is not a broad quality benchmark.
+
+The interface accepts independent prompts, retains only the last 64 byte tokens as generation context, stops at its generation-length limit, and exits on /quit. It has no persistent conversation history or trained end-of-response token. Invalid generated UTF-8 is displayed with replacement characters.
+
+### Limitations and remaining work
+
+- The legacy minimal_chatbot.py remains separate from the staged checkpoint-based implementation. Its earlier limitations must not be confused with the newer scripts.
+- The BPE tokenizer is tested independently but is not connected to the current language-model training run.
+- Generated language remains weak after 1,000 steps; a terminal interface does not establish chatbot reasoning or answering ability.
+- GPU execution, full PyTorch attention equivalence, and a final independent evaluation remain unverified.
+- Dependencies are not pinned. Recorded environment: Python 3.11, torch 2.14.0+cpu, tokenizers 0.23.2. NumPy was still missing in reported runs, causing a non-fatal warning.
+- New lesson sources and generated artifacts were still untracked at documentation review. This publication covers README.md and Progess.md only; it does not publish checkpoints, datasets, or lesson code.
+
+### Next actions
+
+1. Preserve the baseline logs and keep dataset/model settings attached to future experiments.
+2. Close the unconfirmed attention-reference comparison when revisiting validation.
+3. Begin Stage 8 by building a small document index and checking retrieved passages against known questions.
+4. Evaluate retrieval independently before asking this weak, short-context model to produce grounded answers.
+5. Keep conversation memory, API/container work, and deployment marked pending until implemented and tested.
+
+---
+
+## Historical roadmap — September 25, 2026
+
+The original report below is retained for the plan and earlier results. Use the September 27 status table above for current progress.
+
+# Chatbot Research Project — Roadmap and Progress Report
+
 **Report date:** September 25, 2026  
 **Project:** Building and understanding a chatbot from scratch  
 **Repository:** [Research-on-Ai-chatbots](https://github.com/Sushan2004/Research-on-Ai-chatbots)  
@@ -391,3 +551,4 @@ We will avoid changing many settings at once when the goal is understanding caus
 5. Keep the current Transformer script as a reference demonstration.
 
 **Current milestone:** You have successfully trained your first PyTorch model and run a tiny Transformer text generator. The next structured milestone is building and testing your own tokenizer.
+
