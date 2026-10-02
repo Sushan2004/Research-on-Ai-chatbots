@@ -1,10 +1,80 @@
 # Chatbot Research Project — Roadmap and Progress Report
 
-**Updated:** September 27, 2026  
+**Updated:** October 2, 2026
 **Branch:** develop  
 **Repository:** https://github.com/Sushan2004/Research-on-Ai-chatbots
 
-## September 27 progress report
+## October 2 progress report
+
+This update records the learner's terminal results and the latest saved loss log. Training and API requests were not rerun for this documentation update. Earlier reports below are historical; this section supersedes their status labels.
+
+### Current progress
+
+| Stage | Status |
+|---|---|
+| 1–5. Fundamentals through decoder | Previously recorded exercises and tiny-sequence overfitting passed; separate tensor/autograd run confirmations and the PyTorch attention reference comparison remain unrecorded. |
+| 6. Language-model training | Reached 3,000 total optimizer steps; checkpoint reload passed. |
+| 7. Terminal generation | Greedy and temperature/top-p inference work, but output remains repetitive or malformed. No conversation memory or instruction training. |
+| 8. RAG | Document preparation and semantic retrieval tested. Answer generation and answerability handling remain incomplete. |
+| 9. Docker and serving API | Not completed. The external API connectivity test is not a deployed serving API. |
+| 10. Deployment | Not completed. |
+
+### Extended training experiment
+
+Resumed `20260927_204339_675021/checkpoint.pt` at step 1,000 and trained to step 3,000: **2,000 additional optimizer updates**. The `--steps` argument specifies the total target. Results are saved under `lessons/06_training/runs/20261002_123352_952051/`.
+
+The baseline remains a CPU-trained, two-block decoder with 64-dimensional embeddings, four attention heads, a 64-byte context, and batch size 8. Training uses Tiny Shakespeare, a fixed 256-byte vocabulary, AdamW at 0.0003, and gradient clipping at 1.0. The separate 276-entry BPE experiment is not the tokenizer for this model.
+
+| Total step | Training loss | Validation loss |
+|---|---:|---:|
+| 1,000 | 2.5064 | 2.4755 |
+| 1,500 | 2.4252 | 2.4116 |
+| 2,000 | 2.3546 | 2.3422 |
+| 2,500 | 2.3059 | 2.2920 |
+| 3,000 | 2.2426 | 2.2393 |
+
+Checkpoint reload checks passed. Training and validation losses declined with no large gap on the recorded evaluation batches. This measures improved next-byte prediction; it does not prove fluent generation or performance on an independent final test set.
+
+### Generation findings
+
+Greedy output at step 3,000 still repeatedly generated "the". A sampled continuation of `ROMEO` began:
+
+```text
+RETIUCK:
+Burd mat yom you mouler blal the car me he the sucarouly ncat,
+```
+
+This output imitates English/Shakespeare-like spelling and formatting but is mostly gibberish. Sampling changes which tokens are selected; it does not supply missing language competence. The model has not become a reliable conversational assistant. Inspect training, causal masking, context handling, and generation code before assuming more steps alone will resolve the problem; no implementation bug has yet been established.
+
+### Retrieval experiment
+
+- Loaded document snapshots: Progess.md (24,135 characters) and README.md (7,075 characters).
+- Split them into 79 chunks of up to 500 characters with 100-character overlap, retaining source names and character offsets.
+- Document loading, chunking, and preparation checks passed.
+- Encoded passages with sentence-transformers/all-MiniLM-L6-v2 into normalized 384-dimensional vectors and indexed them with FAISS. Index checks passed.
+
+For the question "How many tokens were in our BPE vocabulary?", the explicit answer **276** appeared at rank 4 in Progess.md, chunk 5, with similarity 0.5137. The top three passages discussed related token counts or the separate 256-byte training vocabulary. Increasing retrieval to five passages exposed the relevant evidence, but did not fix its ranking.
+
+The unrelated question "What is the weather tomorrow?" returned irrelevant passages with scores around 0.12–0.14. Search always returning neighbors is not evidence that the documents contain an answer. No calibrated rejection rule or validated answer-generation fallback has been demonstrated.
+
+These character counts and rankings refer to the tested document snapshot, not the newly updated root files. Copies under `lessons/08_rag/documents/` are unchanged by this documentation update and will need a separate refresh and reindex.
+
+### Answer-model integration and environment
+
+Retrieval currently prints passages rather than a synthesized answer. A local answer model was discussed but no completed local-model integration was verified. The OpenRouter API test returned **HTTP 401**; successful authentication and grounded answer generation remain unverified. No API keys belong in this report or the repository.
+
+NumPy and retrieval dependencies were installed. Reported versions include NumPy 2.4.6, sentence-transformers 6.1.0, faiss-cpu 1.15.1, and transformers 5.18.0. Dependencies still need a reproducible pinned environment. The earlier missing-NumPy warning is historical.
+
+### Repository status and next work
+
+Lessons through Stage 7 and the earlier artifacts were published to develop. At the time of this update, the October 2 training run and Stage 8 directory are local, untracked additions. This update changes only the root README.md and Progess.md; it does not publish them or alter lesson files.
+
+1. Review the model and generation implementation, then compare greedy and sampling outputs with fixed prompts and recorded settings.
+2. Build a small retrieval evaluation set with known answers, including BPE vocabulary versus training vocabulary and unrelated questions.
+3. Connect an answer model only after a successful standalone test, then check source citations and insufficient-evidence behavior.
+4. Complete the application before moving to Docker, a serving API, and deployment.
+
+## Historical September 27 progress report
 
 This update records results reported by the learner in terminal output. Source files were inspected for documentation consistency; the experiments were not rerun for this report. The September 25 roadmap is preserved below as historical context. Its old status labels are superseded by this update.
 
