@@ -1,0 +1,122 @@
+{
+  "created_utc": "2026-11-14T18:53:06.212904+00:00",
+  "python": "3.9.6",
+  "torch": "2.8.0",
+  "device": "cpu",
+  "threads": 1,
+  "prompts": [
+    "ROMEO:",
+    "JULIET:",
+    "The king"
+  ],
+  "seed": 42,
+  "seed_policy": "Reset once per decoding mode; prompts run in listed order.",
+  "temperature": 0.8,
+  "top_p": 0.9,
+  "max_new_bytes": 100,
+  "evaluation_seed": 123,
+  "evaluation_batches_per_split": 10,
+  "dataset_sha256": "86c4e6aa9db7c042ec79f339dcb96d42b0075e16b8fc2e86bf0ca57e2dc565ed",
+  "checkpoints": [
+    {
+      "path": "lessons/06_training/runs/20261002_123352_952051/checkpoint.pt",
+      "step": 3000,
+      "sha256": "8f9f52399f882f98000c0a5675973fcf388297d10b7bbe8fdb6a978b6750db7e",
+      "config": {
+        "vocab_size": 256,
+        "max_length": 64,
+        "embedding_dim": 64,
+        "num_heads": 4,
+        "num_layers": 2
+      },
+      "batch_size": 8,
+      "parameters": 136832,
+      "losses": {
+        "train": 2.2425891160964966,
+        "validation": 2.2393016815185547
+      },
+      "logged_losses_match": true,
+      "saved_greedy_sample_matches": true,
+      "outputs": {
+        "greedy": [
+          {
+            "prompt": "ROMEO:",
+            "continuation": "\nAnd the the the the the the the the the the the the the the the the the the the the the the the the"
+          },
+          {
+            "prompt": "JULIET:",
+            "continuation": "\nThe the the the the the the the the the the the the the the the the the the the the the the the the"
+          },
+          {
+            "prompt": "The king",
+            "continuation": " the the the the the the the the the the the the the the the the the the the the the the the the the"
+          }
+        ],
+        "sampled": [
+          {
+            "prompt": "ROMEO:",
+            "continuation": "\nSt your shin were, bloth werencere.\n\n\nSIUSTIIIZ:\nThe wol me hancinc y thavere s bellereeng we I wit"
+          },
+          {
+            "prompt": "JULIET:",
+            "continuation": "\nCE:\nThe wow honch mall all low it concere ar he\nHit and to sou sheath find must tht our cote fotor "
+          },
+          {
+            "prompt": "The king",
+            "continuation": "h bed ant.\n\nKINUS:\nSair whe shele mond to ife. Leal thang He fesalear t sito shay th lent poure th a"
+          }
+        ]
+      }
+    },
+    {
+      "path": "lessons/06_training/runs/20261010_161237_651555/checkpoint.pt",
+      "step": 5000,
+      "sha256": "63dfa7d685a4a6d59f450f1d00003ff2e901c6ea9e5464abece137ca45f16225",
+      "config": {
+        "vocab_size": 256,
+        "max_length": 64,
+        "embedding_dim": 64,
+        "num_heads": 4,
+        "num_layers": 2
+      },
+      "batch_size": 8,
+      "parameters": 136832,
+      "losses": {
+        "train": 2.0819743514060973,
+        "validation": 2.113070011138916
+      },
+      "logged_losses_match": true,
+      "saved_greedy_sample_matches": true,
+      "outputs": {
+        "greedy": [
+          {
+            "prompt": "ROMEO:",
+            "continuation": "\nAnd the the the the the the the the the the the the the the the the the the the the the the the the"
+          },
+          {
+            "prompt": "JULIET:",
+            "continuation": "\nThe the the the the the the the the the the to the the the the the the the the the the the the the "
+          },
+          {
+            "prompt": "The king",
+            "continuation": " the the the the the the the the the the the the the the the the the the the the the the the the the"
+          }
+        ],
+        "sampled": [
+          {
+            "prompt": "ROMEO:",
+            "continuation": "\nTherso the hould did, that hent nechere deme mond one.\n\nGoste Loveeste wo me parinke wicer mand he "
+          },
+          {
+            "prompt": "JULIET:",
+            "continuation": "\nMy thou shourenge assesty to in her ame, ond wis is son to shathe me th be omare heam onke.\n\nISand "
+          },
+          {
+            "prompt": "The king",
+            "continuation": " to beres.\n\nSARARDELEE:\nWhaties nous a to disthe bearte for thit is do well to ce,\nFo sathis the he "
+          }
+        ]
+      }
+    }
+  ]
+}

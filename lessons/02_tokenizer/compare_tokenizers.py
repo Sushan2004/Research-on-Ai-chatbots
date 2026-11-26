@@ -1,3 +1,6 @@
+# Compare our BPE with the Hugging Face implementation on the same tiny corpus.
+# Round trips check text preservation; matching token counts do not prove equivalence.
+
 from tokenizers import Tokenizer, models, trainers, pre_tokenizers, decoders
 from bpe import train_bpe, encode_bpe, decode_bpe
 
@@ -39,6 +42,7 @@ def main():
     )
 
     # Train locally on our text; no pretrained model is downloaded.
+    # This learns tokenizer merge rules only; no language-model weights are trained.
     hf.train_from_iterator([training_text], trainer=trainer)
 
     print("Custom vocabulary:", len(custom_vocab))
@@ -85,5 +89,6 @@ def main():
     print("\nComparison round-trip checks passed.")
 
 
+# Run the example only when launched directly, not when imported by another lesson.
 if __name__ == "__main__":
     main()

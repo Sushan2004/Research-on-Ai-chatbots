@@ -1,3 +1,6 @@
+# Lesson 4a: calculate one attention head explicitly, including a causal mask.
+# Queries and keys determine attention weights; those weights combine value vectors.
+
 import math
 import torch
 
@@ -46,6 +49,7 @@ def main():
         masked_scores = scores.masked_fill(~allowed, float("-inf"))
 
         # Each row becomes a probability distribution over key positions.
+        # Normalize across keys for each query, not across the batch or feature dimension.
         weights = torch.softmax(masked_scores, dim=-1)
 
         # Combine value vectors according to those probabilities.
@@ -113,5 +117,6 @@ def main():
     print("Single-head attention checks passed.")
 
 
+# Run the example only when launched directly, not when imported by another lesson.
 if __name__ == "__main__":
     main()

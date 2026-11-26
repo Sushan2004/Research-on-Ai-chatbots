@@ -1,3 +1,6 @@
+# Lesson 2: learn frequent byte-pair merges, then encode/decode text with them.
+# This BPE experiment is separate from the 256-byte tokenizer used by train.py.
+
 """A minimal byte-level Byte-Pair Encoding (BPE) tokenizer.
 
 Run:
@@ -24,6 +27,7 @@ def decode_bytes(token_ids):
 
 def count_pairs(token_ids):
     """Count all adjacent pairs, including overlapping occurrences."""
+    # Count overlapping pairs, but merge_pair later consumes matches without overlap.
     counts = {}
 
     for i in range(len(token_ids) - 1):
@@ -61,6 +65,7 @@ def train_bpe(text, num_merges, verbose=False):
 
     # Base tokens cover every possible byte, including bytes not seen
     # in the training text.
+    # Tokens represent bytes, so one Unicode character can occupy several token IDs.
     vocab = {i: bytes([i]) for i in range(256)}
     merges = {}
 
@@ -166,6 +171,7 @@ def load_tokenizer(path):
     if not isinstance(records, list):
         raise ValueError("Tokenizer file must contain a merges list.")
 
+    # Tokens represent bytes, so one Unicode character can occupy several token IDs.
     vocab = {i: bytes([i]) for i in range(256)}
     merges = {}
 
@@ -299,6 +305,7 @@ def demo():
     print(f"\nTokenizer saved to: {path}")
 
 
+# Run the example only when launched directly, not when imported by another lesson.
 if __name__ == "__main__":
     run_tests()
     demo()

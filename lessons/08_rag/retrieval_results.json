@@ -1,0 +1,232 @@
+[
+  {
+    "question": "How many tokens were in our BPE vocabulary?",
+    "expected": "276 tokens: 256 base tokens plus 20 merges.",
+    "results": [
+      {
+        "source": "Progess.md",
+        "chunk_id": 6,
+        "start": 2400,
+        "end": 2900,
+        "text": " | UTF-8 bytes | Custom BPE tokens | Library BPE tokens |\n|---|---:|---:|---:|\n| hello world | 11 | 4 | 4 |\n| Hello? | 6 | 5 | 5 |\n| café 🤖 | 10 | 10 | 10 |\n| Empty string | 0 | 0 | 0 |\n\nBoth tokenizers reconstructed all examples exactly. Different token IDs are expected because vocabulary mappings differ. Matching counts on these examples do not prove universal equivalence. The unchanged byte count for café 🤖 shows that the learned rules did not merge its adjacent byte tokens.\n\nReviewed code_to",
+        "score": 0.580950915813446
+      },
+      {
+        "source": "README.md",
+        "chunk_id": 4,
+        "start": 1600,
+        "end": 2100,
+        "text": "oji, and empty input correctly.\n\n| Text | UTF-8 bytes | Custom BPE tokens | Library BPE tokens |\n|---|---:|---:|---:|\n| hello world | 11 | 4 | 4 |\n| Hello? | 6 | 5 | 5 |\n| café 🤖 | 10 | 10 | 10 |\n| Empty text | 0 | 0 | 0 |\n\nToken IDs are tokenizer-specific. Matching counts on these samples do not imply identical vocabularies or behavior on every input. The separate code_tokenize project was reviewed as a syntax-analysis reference, not adopted as our BPE tokenizer.\n\n### Learning and generalizatio",
+        "score": 0.572689950466156
+      },
+      {
+        "source": "README.md",
+        "chunk_id": 8,
+        "start": 3200,
+        "end": 3700,
+        "text": "- Tokenizer: fixed 256-byte vocabulary. The custom BPE tokenizer is a separate experiment and is not used in this training run.\n- CPU; context 64 bytes; batch size 8; embedding size 64; four attention heads; two decoder blocks.\n- AdamW; learning rate 0.0003; gradient norm clipped to 1.0.\n- Evaluation every 100 steps on 10 fixed batches per split, without weight updates.\n- Checkpoints save model, optimizer, configuration, completed step, and RNG state. Reload checks passed.\n\n## Local implementati",
+        "score": 0.5674787163734436
+      },
+      {
+        "source": "Progess.md",
+        "chunk_id": 5,
+        "start": 2000,
+        "end": 2500,
+        "text": "oad.\n\nThe custom tokenizer learned 20 merges on top of 256 base byte tokens, producing a vocabulary of 276. Encoding applies learned rules without changing them. Decoding expands merged tokens into byte sequences before UTF-8 decoding.\n\nCompared with Hugging Face Tokenizers 0.23.2 using the same training text and vocabulary budget, with prefix-space insertion and regex splitting disabled:\n\n| Input | UTF-8 bytes | Custom BPE tokens | Library BPE tokens |\n|---|---:|---:|---:|\n| hello world | 11 | ",
+        "score": 0.5136657357215881
+      },
+      {
+        "source": "Progess.md",
+        "chunk_id": 7,
+        "start": 2800,
+        "end": 3300,
+        "text": "nt for café 🤖 shows that the learned rules did not merge its adjacent byte tokens.\n\nReviewed code_tokenize as a separate research reference: it produces syntax-aware program token objects from syntax trees rather than learning byte-pair vocabulary IDs. It was not integrated into the project.\n\n### 2. Embeddings and positional information\n\nVerified a token table with shape [10, 4], containing 40 parameters. Input [2, 3] became output [2, 3, 4]. Repeated token IDs retrieved identical vectors.\n\nAdde",
+        "score": 0.5107327699661255
+      }
+    ]
+  },
+  {
+    "question": "What vocabulary size does our training model use?",
+    "expected": "256 byte tokens.",
+    "results": [
+      {
+        "source": "Progess.md",
+        "chunk_id": 55,
+        "start": 22000,
+        "end": 22500,
+        "text": "ning, and generation.\n\nIts observed limitations are:\n\n| Finding | Explanation | Planned action |\n|---|---|---|\n| Repeats training phrases | Very small corpus encourages memorization | Add held-out evaluation and larger data in Stage 6 |\n| Crashes on `?` | Character absent from vocabulary | Verify the input guard; address coverage in Stage 2 |\n| Continues prompts instead of reliably answering | Trained as a text continuation model | Add appropriate conversation data and formatting in Stage 7 |\n| ",
+        "score": 0.5144463181495667
+      },
+      {
+        "source": "Progess.md",
+        "chunk_id": 13,
+        "start": 5200,
+        "end": 5700,
+        "text": "byte encoding and window sampling. Training contained 1,003,854 bytes; validation contained 111,540 bytes. Dataset checks verified [4, 32] input/target batches, one-token shifts, valid byte IDs, and window boundaries.\n\nThe larger training run deliberately uses the fixed 256-byte vocabulary, not the learned 276-token BPE vocabulary. Keep this distinction when reproducing the experiment.\n\n| Setting | Value |\n|---|---|\n| Device | CPU |\n| Vocabulary | 256 UTF-8 byte IDs |\n| Context length | 64 byte ",
+        "score": 0.48814651370048523
+      },
+      {
+        "source": "Progess.md",
+        "chunk_id": 12,
+        "start": 4800,
+        "end": 5300,
+        "text": " |\n\nThe exact-generation and overfitting checks passed. This establishes successful memorization of the tiny example, not general language understanding.\n\n### 5. Dataset and training setup\n\nDataset: [Tiny Shakespeare from karpathy/char-rnn](https://github.com/karpathy/char-rnn/blob/master/data/tinyshakespeare/input.txt).\n\nThe text was split contiguously into 90% training and 10% validation before byte encoding and window sampling. Training contained 1,003,854 bytes; validation contained 111,540 ",
+        "score": 0.47305694222450256
+      },
+      {
+        "source": "Progess.md",
+        "chunk_id": 27,
+        "start": 10800,
+        "end": 11300,
+        "text": "ith PyTorch fundamentals, implement the main language-model components ourselves, train a tiny model, and gradually add conversation handling, retrieval, an API, and deployment.\n\nThe initial goal is **an understandable, testable learning system**. A tiny model trained on a small corpus will have limited language and question-answering capabilities. We will measure those limits and distinguish infrastructure improvements from improvements in the model itself.\n\n## 2. How we will work\n\nFor each sta",
+        "score": 0.46941447257995605
+      },
+      {
+        "source": "Progess.md",
+        "chunk_id": 44,
+        "start": 17600,
+        "end": 18100,
+        "text": "odel.\n- Successful overfitting on a tiny fixed dataset.\n\n**Deliverable:** A minimal decoder whose components you can explain and test.\n\n### Stage 6 — Train a tiny language model\n\n**Status:** Tiny demonstration trained; structured experiment pending.\n\n**Learn**\n- Dataset preparation and batching.\n- Training versus validation loss.\n- Overfitting and generalization.\n- Learning rate, context length, and model size.\n- Checkpoints and reproducibility.\n\n**Build**\n- Training pipeline for a small corpus.",
+        "score": 0.46409356594085693
+      }
+    ]
+  },
+  {
+    "question": "What context length does our training model use?",
+    "expected": "64 byte tokens.",
+    "results": [
+      {
+        "source": "Progess.md",
+        "chunk_id": 13,
+        "start": 5200,
+        "end": 5700,
+        "text": "byte encoding and window sampling. Training contained 1,003,854 bytes; validation contained 111,540 bytes. Dataset checks verified [4, 32] input/target batches, one-token shifts, valid byte IDs, and window boundaries.\n\nThe larger training run deliberately uses the fixed 256-byte vocabulary, not the learned 276-token BPE vocabulary. Keep this distinction when reproducing the experiment.\n\n| Setting | Value |\n|---|---|\n| Device | CPU |\n| Vocabulary | 256 UTF-8 byte IDs |\n| Context length | 64 byte ",
+        "score": 0.5082595348358154
+      },
+      {
+        "source": "Progess.md",
+        "chunk_id": 55,
+        "start": 22000,
+        "end": 22500,
+        "text": "ning, and generation.\n\nIts observed limitations are:\n\n| Finding | Explanation | Planned action |\n|---|---|---|\n| Repeats training phrases | Very small corpus encourages memorization | Add held-out evaluation and larger data in Stage 6 |\n| Crashes on `?` | Character absent from vocabulary | Verify the input guard; address coverage in Stage 2 |\n| Continues prompts instead of reliably answering | Trained as a text continuation model | Add appropriate conversation data and formatting in Stage 7 |\n| ",
+        "score": 0.44391921162605286
+      },
+      {
+        "source": "Progess.md",
+        "chunk_id": 50,
+        "start": 20000,
+        "end": 20500,
+        "text": "s.\n- Irrelevant questions are identified.\n- Retrieved context fits the model’s input budget.\n- Compare answers with and without retrieval.\n\n**Important design checkpoint:** Our tiny model may not reliably use retrieved passages. If that happens, we will demonstrate retrieval separately and compare with a more capable pretrained model, while keeping the scratch model as a learning artifact.\n\n**Deliverable:** Retrieval pipeline and a grounded-answer evaluation report.\n\n### Stage 9 — Containerize a",
+        "score": 0.4321669340133667
+      },
+      {
+        "source": "README.md",
+        "chunk_id": 8,
+        "start": 3200,
+        "end": 3700,
+        "text": "- Tokenizer: fixed 256-byte vocabulary. The custom BPE tokenizer is a separate experiment and is not used in this training run.\n- CPU; context 64 bytes; batch size 8; embedding size 64; four attention heads; two decoder blocks.\n- AdamW; learning rate 0.0003; gradient norm clipped to 1.0.\n- Evaluation every 100 steps on 10 fixed batches per split, without weight updates.\n- Checkpoints save model, optimizer, configuration, completed step, and RNG state. Reload checks passed.\n\n## Local implementati",
+        "score": 0.415968656539917
+      },
+      {
+        "source": "Progess.md",
+        "chunk_id": 11,
+        "start": 4400,
+        "end": 4900,
+        "text": "earned position embeddings, two decoder blocks, pre-layer normalization, residual connections, feedforward networks, final normalization, and vocabulary projection. Inputs and targets were shifted by one token for next-token prediction.\n\n| Measurement | Result |\n|---|---:|\n| Final training loss | 0.001536 |\n| Training-token accuracy | 100.00% |\n| Generated text | hello world repeated on four lines |\n\nThe exact-generation and overfitting checks passed. This establishes successful memorization of ",
+        "score": 0.3965584635734558
+      }
+    ]
+  },
+  {
+    "question": "What is the weather tomorrow?",
+    "expected": null,
+    "results": [
+      {
+        "source": "README.md",
+        "chunk_id": 7,
+        "start": 2800,
+        "end": 3300,
+        "text": "le temperature 0.8 and top-p 0.9 produced more varied but mostly malformed text. Sampling reduced repetition in this example; it did not make the model a reliable assistant.\n\n## Baseline configuration\n\n- Dataset: [Tiny Shakespeare](https://github.com/karpathy/char-rnn/blob/master/data/tinyshakespeare/input.txt).\n- Contiguous 90/10 text split: 1,003,854 training bytes and 111,540 validation bytes.\n- Tokenizer: fixed 256-byte vocabulary. The custom BPE tokenizer is a separate experiment and is not",
+        "score": 0.1368873417377472
+      },
+      {
+        "source": "Progess.md",
+        "chunk_id": 47,
+        "start": 18800,
+        "end": 19300,
+        "text": "ce.\n- Temperature and top-p sampling.\n- Conversation formatting and history.\n- Context limits and stopping conditions.\n\n**Build**\n- Terminal interface.\n- Consistent user/assistant formatting in data and prompts.\n- Conversation history management.\n- Safe handling of unsupported input.\n- Exit/reset commands.\n- Loading a saved model without retraining.\n\n**Tests**\n- Empty and unsupported input do not crash.\n- Generation length is bounded.\n- Prompt text is separated from generated output.\n- History f",
+        "score": 0.12984848022460938
+      },
+      {
+        "source": "Progess.md",
+        "chunk_id": 53,
+        "start": 21200,
+        "end": 21700,
+        "text": "Local versus cloud deployment.\n- CPU/GPU resource requirements.\n- Startup time, memory, and inference latency.\n- Logging, access controls, and cost considerations.\n\n**Build**\n- Local Docker deployment.\n- End-to-end test procedure.\n- Deployment configuration and troubleshooting guide.\n- Cloud deployment plan; actual cloud deployment only with approval.\n\n**Tests**\n- Health and generation requests pass.\n- Measure latency and memory usage.\n- Confirm restart behavior and checkpoint availability.\n- Ve",
+        "score": 0.1192527711391449
+      },
+      {
+        "source": "README.md",
+        "chunk_id": 6,
+        "start": 2400,
+        "end": 2900,
+        "text": "13 | 3.4336 |\n| 200 | 3.0636 | 3.0554 |\n| 1,000 | 2.5064 | 2.4755 |\n\nBoth losses improved, without an obvious overfitting gap in the fixed evaluation batches. This does not establish fluent generation or performance on a final independent test set.\n\n### Sampling changes outputs without changing model knowledge\n\nWith the same step-1,000 checkpoint and ROMEO prompt, greedy decoding repeated the, while temperature 0.8 and top-p 0.9 produced more varied but mostly malformed text. Sampling reduced re",
+        "score": 0.11304420232772827
+      },
+      {
+        "source": "Progess.md",
+        "chunk_id": 0,
+        "start": 0,
+        "end": 500,
+        "text": "# Chatbot Research Project — Roadmap and Progress Report\n\n**Updated:** September 27, 2026  \n**Branch:** develop  \n**Repository:** https://github.com/Sushan2004/Research-on-Ai-chatbots\n\n## September 27 progress report\n\nThis update records results reported by the learner in terminal output. Source files were inspected for documentation consistency; the experiments were not rerun for this report. The September 25 roadmap is preserved below as historical context. Its old status labels are superseded",
+        "score": 0.10038518160581589
+      }
+    ]
+  },
+  {
+    "question": "What is my favorite food?",
+    "expected": null,
+    "results": [
+      {
+        "source": "Progess.md",
+        "chunk_id": 6,
+        "start": 2400,
+        "end": 2900,
+        "text": " | UTF-8 bytes | Custom BPE tokens | Library BPE tokens |\n|---|---:|---:|---:|\n| hello world | 11 | 4 | 4 |\n| Hello? | 6 | 5 | 5 |\n| café 🤖 | 10 | 10 | 10 |\n| Empty string | 0 | 0 | 0 |\n\nBoth tokenizers reconstructed all examples exactly. Different token IDs are expected because vocabulary mappings differ. Matching counts on these examples do not prove universal equivalence. The unchanged byte count for café 🤖 shows that the learned rules did not merge its adjacent byte tokens.\n\nReviewed code_to",
+        "score": 0.11655563116073608
+      },
+      {
+        "source": "Progess.md",
+        "chunk_id": 50,
+        "start": 20000,
+        "end": 20500,
+        "text": "s.\n- Irrelevant questions are identified.\n- Retrieved context fits the model’s input budget.\n- Compare answers with and without retrieval.\n\n**Important design checkpoint:** Our tiny model may not reliably use retrieved passages. If that happens, we will demonstrate retrieval separately and compare with a more capable pretrained model, while keeping the scratch model as a learning artifact.\n\n**Deliverable:** Retrieval pipeline and a grounded-answer evaluation report.\n\n### Stage 9 — Containerize a",
+        "score": 0.112568698823452
+      },
+      {
+        "source": "Progess.md",
+        "chunk_id": 43,
+        "start": 17200,
+        "end": 17700,
+        "text": "nections.\n- Layer normalization.\n- Feedforward networks.\n- Decoder block composition.\n- Vocabulary logits and shifted next-token targets.\n\n**Build**\n- Decoder block.\n- Stacked decoder model.\n- Output projection and cross-entropy loss.\n- A tiny overfitting experiment.\n\n**Tests**\n- Forward output shape: `[batch, sequence, vocabulary]`.\n- Finite loss and gradients.\n- Causal behavior across the full model.\n- Successful overfitting on a tiny fixed dataset.\n\n**Deliverable:** A minimal decoder whose co",
+        "score": 0.10083969682455063
+      },
+      {
+        "source": "Progess.md",
+        "chunk_id": 7,
+        "start": 2800,
+        "end": 3300,
+        "text": "nt for café 🤖 shows that the learned rules did not merge its adjacent byte tokens.\n\nReviewed code_tokenize as a separate research reference: it produces syntax-aware program token objects from syntax trees rather than learning byte-pair vocabulary IDs. It was not integrated into the project.\n\n### 2. Embeddings and positional information\n\nVerified a token table with shape [10, 4], containing 40 parameters. Input [2, 3] became output [2, 3, 4]. Repeated token IDs retrieved identical vectors.\n\nAdde",
+        "score": 0.08453419804573059
+      },
+      {
+        "source": "Progess.md",
+        "chunk_id": 38,
+        "start": 15200,
+        "end": 15700,
+        "text": "rips.\n- Empty text, punctuation, repeated text, and Unicode.\n- Deterministic merge order.\n- Save/load consistency.\n\n**Research output:** Compare character, byte, and BPE token counts on sample text.\n\n**Deliverable:** Tokenizer implementation, tests, and comparison notes.\n\n### Stage 3 — Embeddings and positional information\n\n**Status:** Not started; present in the demonstration script.\n\n**Learn**\n- Turning token IDs into learned vectors.\n- Batch, sequence, and embedding dimensions.\n- Why attentio",
+        "score": 0.07506783306598663
+      }
+    ]
+  }
+]

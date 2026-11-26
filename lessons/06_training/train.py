@@ -1,3 +1,7 @@
+# Train the baseline decoder, or resume a checkpoint into a new results folder.
+# --steps is the total target update count; validation and generation do not update weights.
+# This original trainer uses a different sampler from the later context/duration experiments.
+
 import argparse
 import csv
 import sys
@@ -28,6 +32,7 @@ EVAL_BATCHES = 10
 @torch.no_grad()
 def evaluate(model, batches):
     """Measure loss without changing the weights."""
+    # Remember the caller's mode so reporting does not accidentally leave training disabled.
     was_training = model.training
     model.eval()
 
@@ -43,6 +48,7 @@ def evaluate(model, batches):
 @torch.no_grad()
 def generate_sample(model):
     """Keep the prompt and greedy decoding consistent between reports."""
+    # Remember the caller's mode so reporting does not accidentally leave training disabled.
     was_training = model.training
     model.eval()
 
@@ -89,6 +95,7 @@ def main():
         if saved["tokenizer"] != "utf8_bytes_256":
             raise ValueError("This script requires the byte tokenizer.")
 
+    # Weight shapes must match the saved architecture when resuming.
     config = saved["config"] if saved else DEFAULT_CONFIG.copy()
     batch_size = saved["batch_size"] if saved else 8
     learning_rate = saved["learning_rate"] if saved else 0.0003
@@ -172,23 +179,28 @@ def main():
                 train_data, batch_size, config["max_length"]
             )
 
+            # Gradients accumulate in PyTorch; clear them before this batch's backward pass.
             optimizer.zero_grad(set_to_none=True)
             _, loss = model(x, y)
 
             if not torch.isfinite(loss):
                 raise RuntimeError(f"Non-finite loss at step {step}")
 
+            # Find how each parameter affects the error; this alone does not update weights.
             loss.backward()
+            # Bound the combined gradient norm to limit unusually large updates.
             torch.nn.utils.clip_grad_norm_(
                 model.parameters(),
                 max_norm=1.0,
                 error_if_nonfinite=True,
             )
+            # AdamW now updates weights using gradients and its saved running statistics.
             optimizer.step()
 
             if step % EVAL_INTERVAL == 0 or step == args.steps:
                 report(step)
 
+                # Optimizer and RNG state preserve more of the training trajectory than weights alone.
                 checkpoint = {
                     "model_state": model.state_dict(),
                     "optimizer_state": optimizer.state_dict(),
@@ -233,5 +245,6 @@ def main():
     print("Results saved to:", run_dir)
 
 
+# Run the example only when launched directly, not when imported by another lesson.
 if __name__ == "__main__":
     main()

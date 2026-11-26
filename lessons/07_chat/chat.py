@@ -1,3 +1,7 @@
+# Lesson 7: load trained weights and continue terminal prompts without retraining.
+# At the you: prompt, enter text or /quit; shell commands belong at the terminal shell.
+# Each prompt is independent: there is no conversation history or instruction training.
+
 import argparse
 import sys
 from pathlib import Path
@@ -15,6 +19,7 @@ from decoder import TinyDecoder
 @torch.no_grad()
 def generate(model, prompt, max_tokens, temperature, top_p, greedy):
     """Generate a continuation using either greedy or sampled decoding."""
+    # UTF-8 covers arbitrary input text; the model still may not generate valid UTF-8.
     ids = torch.tensor(
         [list(prompt.encode("utf-8"))],
         dtype=torch.long,
@@ -29,6 +34,7 @@ def generate(model, prompt, max_tokens, temperature, top_p, greedy):
         # Scores for the next byte, from the final input position.
         next_logits = logits[:, -1, :]
 
+        # This changes token selection only; inference does not modify trained weights.
         if greedy:
             next_id = next_logits.argmax(dim=-1, keepdim=True)
         else:
@@ -81,6 +87,7 @@ def main():
     parser.add_argument("--checkpoint", type=Path, required=True)
     parser.add_argument("--temperature", type=float, default=0.8)
     parser.add_argument("--top-p", type=float, default=0.9)
+    # A token here is a byte, not a word; generation stops at this fixed byte count.
     parser.add_argument("--max-tokens", type=int, default=200)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument(
@@ -124,6 +131,7 @@ def main():
 
     while True:
         try:
+            # This is chatbot input, not a shell. Exit with /quit before entering launch commands.
             prompt = input("you: ")
 
             if prompt.strip() == "/quit":
@@ -147,5 +155,6 @@ def main():
             break
 
 
+# Run the example only when launched directly, not when imported by another lesson.
 if __name__ == "__main__":
     main()

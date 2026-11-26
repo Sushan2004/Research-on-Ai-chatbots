@@ -1,3 +1,6 @@
+# Prepare the Shakespeare corpus as UTF-8 byte IDs and sample next-byte examples.
+# Split the text first so training windows cannot cross into the validation portion.
+
 from pathlib import Path
 
 import torch
@@ -20,6 +23,7 @@ def load_data():
 
     # Keep the first 90% for training and the final 10% for validation.
     # Split before creating windows so no window crosses the boundary.
+    # This boundary is measured in Python characters; each portion is byte-encoded afterward.
     split = int(len(text) * 0.9)
     train_text = text[:split]
     val_text = text[split:]
@@ -72,6 +76,7 @@ def get_batch(data, batch_size, block_size):
         targets.append(y)
 
     # Combine individual windows into [batch_size, block_size] tensors.
+    # At each position, y is exactly one byte ahead of x: the prediction target.
     return torch.stack(inputs), torch.stack(targets)
 
 
@@ -128,5 +133,6 @@ def main():
     print("All dataset checks passed.")
 
 
+# Run the example only when launched directly, not when imported by another lesson.
 if __name__ == "__main__":
     main()

@@ -1,0 +1,353 @@
+{
+  "python": "3.9.6",
+  "torch": "2.8.0",
+  "device": "cpu",
+  "threads": 1,
+  "dataset_sha256": "86c4e6aa9db7c042ec79f339dcb96d42b0075e16b8fc2e86bf0ca57e2dc565ed",
+  "source_checkpoint": "lessons/06_training/experiments/context_20261114_185438_026390/64/checkpoint.pt",
+  "source_sha256": "4239102388f317ef4dd03a375493ec0f9cfbd3744bb0cdb149cfdf2c1e8b40e8",
+  "training_seconds": 26.286277917,
+  "additional_steps": 5000,
+  "config": {
+    "vocab_size": 256,
+    "max_length": 64,
+    "embedding_dim": 64,
+    "num_heads": 4,
+    "num_layers": 2
+  },
+  "batch_size": 8,
+  "learning_rate": 0.0003,
+  "weight_decay": 0.01,
+  "reload_exact_match": true,
+  "evaluation_seed": 123,
+  "common_targets": 1024,
+  "prompts": [
+    "ROMEO:",
+    "JULIET:",
+    "The king",
+    "HAMLET:\n",
+    "To be, or not to be",
+    "What is your name?"
+  ],
+  "generation": {
+    "seeds": [
+      42,
+      43,
+      44
+    ],
+    "temperature": 0.8,
+    "top_p": 0.9,
+    "max_new_bytes": 100,
+    "seed_policy": "reset per prompt and seed for paired comparisons"
+  },
+  "results": [
+    {
+      "step": 5000,
+      "losses": {
+        "train": 2.0920605659484863,
+        "validation": 2.1739164352416993
+      },
+      "common_final_byte_validation_loss": 2.1393923461437225,
+      "outputs": [
+        {
+          "prompt": "ROMEO:",
+          "mode": "greedy",
+          "seed": 42,
+          "continuation": "\nAnd the the the the the the the the the the the the the the the the the the the the the the the the"
+        },
+        {
+          "prompt": "ROMEO:",
+          "mode": "sampled",
+          "seed": 42,
+          "continuation": "\nThake the wee comy wherst not\nso his to inch of he the souser nom of mat fer hisins but,\nWhan dome "
+        },
+        {
+          "prompt": "ROMEO:",
+          "mode": "sampled",
+          "seed": 43,
+          "continuation": "\nHare the spears sour wold cous seeartin hal frither it in you se ta cand facingeng ourter of thes a"
+        },
+        {
+          "prompt": "ROMEO:",
+          "mode": "sampled",
+          "seed": 44,
+          "continuation": "\nShour comy say mantan ford pould ast no to for the well beengears a now wonth merstar the and ming\n"
+        },
+        {
+          "prompt": "JULIET:",
+          "mode": "greedy",
+          "seed": 42,
+          "continuation": "\nThat the the the the the the the to the the the the the the the the the the the the the the the the"
+        },
+        {
+          "prompt": "JULIET:",
+          "mode": "sampled",
+          "seed": 42,
+          "continuation": "\nI I'tir my hase donche and,\nThat and the farse sthe the son and mad.\n\n\nWhet, Lorit no tha the you t"
+        },
+        {
+          "prompt": "JULIET:",
+          "mode": "sampled",
+          "seed": 43,
+          "continuation": "\nNou I there and my thous the hate win mese\nir he soldst wit of then you tou wordse love cor of pien"
+        },
+        {
+          "prompt": "JULIET:",
+          "mode": "sampled",
+          "seed": 44,
+          "continuation": "\nWhow thou wearyst the frell this at to not for the me\nThat and se to tater, forer sall the oue\n\nBRI"
+        },
+        {
+          "prompt": "The king",
+          "mode": "greedy",
+          "seed": 42,
+          "continuation": " the the the the the the the the to the the the the the the the the the the the the the the the the "
+        },
+        {
+          "prompt": "The king",
+          "mode": "sampled",
+          "seed": 42,
+          "continuation": " withell soo der ice\nI tre lint tout th his suline he se soste doth\nHer shean hous beit hin with wil"
+        },
+        {
+          "prompt": "The king",
+          "mode": "sampled",
+          "seed": 43,
+          "continuation": " sant the a the sing whill pen untit once.\nMid I tat liveang my to me con if shentin mesty sour do a"
+        },
+        {
+          "prompt": "The king",
+          "mode": "sampled",
+          "seed": 44,
+          "continuation": ",\nTon thour hom man so lance that his an to for the hat mang ofthin ford wold this my,\nAnd so byo pr"
+        },
+        {
+          "prompt": "HAMLET:\n",
+          "mode": "greedy",
+          "seed": 42,
+          "continuation": "The the the the the the the the the the the the the the the the the the the the the the the the the "
+        },
+        {
+          "prompt": "HAMLET:\n",
+          "mode": "sampled",
+          "seed": 42,
+          "continuation": "The imourne hould ourse hand hom he is counoniane\nd the me bow wing what here as for farck\n\nFo post "
+        },
+        {
+          "prompt": "HAMLET:\n",
+          "mode": "sampled",
+          "seed": 43,
+          "continuation": "Sway ford sin would thou deare, heat spelfor cor this hispee him ange not botio sh pay an bot,\nBild,"
+        },
+        {
+          "prompt": "HAMLET:\n",
+          "mode": "sampled",
+          "seed": 44,
+          "continuation": "Semay thoughe core in with will these and and with thir mantir shan in sto hour you fie the the\nSou "
+        },
+        {
+          "prompt": "To be, or not to be",
+          "mode": "greedy",
+          "seed": 42,
+          "continuation": " the the the the the the the the the the the the the the the the the the the the the the the the the"
+        },
+        {
+          "prompt": "To be, or not to be",
+          "mode": "sampled",
+          "seed": 42,
+          "continuation": " with, that sint of wethe oulle:\nAs pre the mot whe the manous pee mince arst shes wit thou hist man"
+        },
+        {
+          "prompt": "To be, or not to be",
+          "mode": "sampled",
+          "seed": 43,
+          "continuation": "ay chand toue wars thou do in anest,\nSast as your she and the se sould, the oo th and to no cominous"
+        },
+        {
+          "prompt": "To be, or not to be",
+          "mode": "sampled",
+          "seed": 44,
+          "continuation": "aine.\n\nThalle, your har do so mant sher not bee to thit to histe and four,\nSit ithe bot the ouncin a"
+        },
+        {
+          "prompt": "What is your name?",
+          "mode": "greedy",
+          "seed": 42,
+          "continuation": "\n\nHENTIO:\nWhe the the the the the the the the the the the the the the the the the the the the the th"
+        },
+        {
+          "prompt": "What is your name?",
+          "mode": "sampled",
+          "seed": 42,
+          "continuation": "\n\nCELER:\nWhire have, my anst all his that is lid sof the son and hele fortth pat wich\nThen the love "
+        },
+        {
+          "prompt": "What is your name?",
+          "mode": "sampled",
+          "seed": 43,
+          "continuation": "\n\nSist ther the the thirt there to wingher,\nI a core not wit of then you tou word.\n\nPo that you ourt"
+        },
+        {
+          "prompt": "What is your name?",
+          "mode": "sampled",
+          "seed": 44,
+          "continuation": "\n\nLetll of dests, you ser my to then to cournen to thit to se tato to thee we tho a hist lomee\nsin a"
+        }
+      ]
+    },
+    {
+      "step": 10000,
+      "losses": {
+        "train": 1.8532992243766784,
+        "validation": 1.9779508709907532
+      },
+      "common_final_byte_validation_loss": 1.9643097664229572,
+      "outputs": [
+        {
+          "prompt": "ROMEO:",
+          "mode": "greedy",
+          "seed": 42,
+          "continuation": "\nWhere so so seep the see the some the seep the the so some the the sould the the sould the the soul"
+        },
+        {
+          "prompt": "ROMEO:",
+          "mode": "sampled",
+          "seed": 42,
+          "continuation": "\nAy, say have make ater sower, my the see\nto lecter the my bear mashand sheer on with he manter,\nFor"
+        },
+        {
+          "prompt": "ROMEO:",
+          "mode": "sampled",
+          "seed": 43,
+          "continuation": "\nNot so sompers, he sand of to go mint your a his a beether is an trike the castirs purtist I stare,"
+        },
+        {
+          "prompt": "ROMEO:",
+          "mode": "sampled",
+          "seed": 44,
+          "continuation": "\nSo he is will daing the supon, and be peare;\nFor and me dith seall in anced be a hise the hey drour"
+        },
+        {
+          "prompt": "JULIET:",
+          "mode": "greedy",
+          "seed": 42,
+          "continuation": "\nI so some the so so seet the so sould the the so so so son the the the the the sould the the sould "
+        },
+        {
+          "prompt": "JULIET:",
+          "mode": "sampled",
+          "seed": 42,
+          "continuation": "\nAwary, the ares wis he hencones a and proad you some my he my plid.\n\nAULESTIO:\nWe do my hist our go"
+        },
+        {
+          "prompt": "JULIET:",
+          "mode": "sampled",
+          "seed": 43,
+          "continuation": "\nSee, the to the he sing love shark.\n\nMENINGARY:\nWhat have not son as your ben that lesst me with hi"
+        },
+        {
+          "prompt": "JULIET:",
+          "mode": "sampled",
+          "seed": 44,
+          "continuation": "\nNo, had their wast me you as have have you list.\n\nGLAMIO:\nI a me that heir sont,\nBut the the dieste"
+        },
+        {
+          "prompt": "The king",
+          "mode": "greedy",
+          "seed": 42,
+          "continuation": " the so so seep the the so seet the so so the so so so son the the the the the sould the the sould t"
+        },
+        {
+          "prompt": "The king",
+          "mode": "sampled",
+          "seed": 42,
+          "continuation": " of orne me herver stook.\n\nThat Could the cantand the a haste the lack thim,\nWhit the demireng and t"
+        },
+        {
+          "prompt": "The king",
+          "mode": "sampled",
+          "seed": 43,
+          "continuation": " will the to the he sprock for no his deman:\nYour so would be are trie the griess,\nAnd she hey drish"
+        },
+        {
+          "prompt": "The king",
+          "mode": "sampled",
+          "seed": 44,
+          "continuation": ",\nTo a a spost murder him with not man fail ond the hath paine sently\nAllanse thand but the for my d"
+        },
+        {
+          "prompt": "HAMLET:\n",
+          "mode": "greedy",
+          "seed": 42,
+          "continuation": "I so some the so so seet the so sould the the so so so son the the the the the sould the the sould t"
+        },
+        {
+          "prompt": "HAMLET:\n",
+          "mode": "sampled",
+          "seed": 42,
+          "continuation": "I mongue will the chome and shill,\nYou the love our the all shad fave with sher,\nBell shas me fare a"
+        },
+        {
+          "prompt": "HAMLET:\n",
+          "mode": "sampled",
+          "seed": 43,
+          "continuation": "We chere to seed he stight for no his demas,\nYour have shall would as lestak shase you her a fack'd\n"
+        },
+        {
+          "prompt": "HAMLET:\n",
+          "mode": "sampled",
+          "seed": 44,
+          "continuation": "We lather and of my and your the that not so the for pearting that shall fail thy\nBeast the comore a"
+        },
+        {
+          "prompt": "To be, or not to be",
+          "mode": "greedy",
+          "seed": 42,
+          "continuation": " the so so some the the the so the so so seeet the the sould the the sould the the sould the the sou"
+        },
+        {
+          "prompt": "To be, or not to be",
+          "mode": "sampled",
+          "seed": 42,
+          "continuation": " at flierth, is their\nSen as stile, love no ard were the spot the your thim head meary\nAnd the grive"
+        },
+        {
+          "prompt": "To be, or not to be",
+          "mode": "sampled",
+          "seed": 43,
+          "continuation": " with the dis be of the wast see shall be have a sendis my can and him the you self give for with hi"
+        },
+        {
+          "prompt": "To be, or not to be",
+          "mode": "sampled",
+          "seed": 44,
+          "continuation": "st mord:\nTo sill so hee bear the that pon he the our your him the the truke.\n\n\nMISANGAUCE I:\nOn, is "
+        },
+        {
+          "prompt": "What is your name?",
+          "mode": "greedy",
+          "seed": 42,
+          "continuation": "\n\nCARINIUS:\nI shall the sould the so seent the the the the the sould the the sould the the sould the"
+        },
+        {
+          "prompt": "What is your name?",
+          "mode": "sampled",
+          "seed": 42,
+          "continuation": "\n\nSethour steers for me sost sparre your go dre well the sone\nTo wers my dose see the soould beare t"
+        },
+        {
+          "prompt": "What is your name?",
+          "mode": "sampled",
+          "seed": 43,
+          "continuation": "\n\nGRICHARD:\nThe the sit be y seet, were dasine.\n\n\nCOLIANGBELLANUS:\nWhe the our that lesteed day's a "
+        },
+        {
+          "prompt": "What is your name?",
+          "mode": "sampled",
+          "seed": 44,
+          "continuation": "\n\nDUKE VINV:\nWhell not in and hist he sill them sold I some.\n\n\nARICK:\nWay, sir, fave he hour done me"
+        }
+      ]
+    }
+  ]
+}

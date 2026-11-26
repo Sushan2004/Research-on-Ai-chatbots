@@ -1,3 +1,7 @@
+# Legacy, self-contained demonstration; use lessons/07_chat/chat.py for saved checkpoints.
+# This version trains on startup, uses a limited character vocabulary, and has no held-out
+# validation split. Its limitations are preserved here rather than silently changed.
+
 """
 Minimal decoder-only transformer, trained character by character, with a chat loop at the end.
 No huggingface, no tiktoken. Everything built from scratch so you can see every piece.
@@ -33,6 +37,7 @@ vocab_size = len(chars)
 stoi = {ch: i for i, ch in enumerate(chars)}
 itos = {i: ch for i, ch in enumerate(chars)}
 
+# Direct dictionary lookup raises KeyError for characters absent from the tiny corpus.
 def encode(s):
     return [stoi[c] for c in s]
 
@@ -55,6 +60,7 @@ max_iters = 3000
 eval_interval = 300
 
 def get_batch():
+    # Historical sampler excludes the final valid window; the staged dataset.py fixes this.
     ix = torch.randint(len(data) - block_size - 1, (batch_size,))
     x = torch.stack([data[i:i + block_size] for i in ix])
     y = torch.stack([data[i + 1:i + block_size + 1] for i in ix])
@@ -72,6 +78,7 @@ class Head(nn.Module):
         self.register_buffer("tril", torch.tril(torch.ones(block_size, block_size)))
         self.dropout = nn.Dropout(dropout)
 
+    # Project input vectors into queries, keys and values for this single attention head.
     def forward(self, x):
         B, T, C = x.shape
         k = self.key(x)
@@ -91,6 +98,7 @@ class MultiHeadAttention(nn.Module):
         self.proj = nn.Linear(n_embd, n_embd)
         self.dropout = nn.Dropout(dropout)
 
+    # Concatenate independent head outputs, then mix them with a learned projection.
     def forward(self, x):
         out = torch.cat([h(x) for h in self.heads], dim=-1)
         return self.dropout(self.proj(out))
@@ -106,6 +114,7 @@ class FeedForward(nn.Module):
             nn.Dropout(dropout),
         )
 
+    # Apply the same nonlinear feedforward transformation at every sequence position.
     def forward(self, x):
         return self.net(x)
 
@@ -119,6 +128,7 @@ class Block(nn.Module):
         self.ln1 = nn.LayerNorm(n_embd)
         self.ln2 = nn.LayerNorm(n_embd)
 
+    # Residual connections add attention and feedforward updates to the existing representation.
     def forward(self, x):
         x = x + self.sa(self.ln1(x))   # residual connection around attention
         x = x + self.ffwd(self.ln2(x))  # residual connection around feedforward
@@ -195,6 +205,7 @@ def train():
 # ---------------------------------------------------------------------------
 # 6. Chat loop
 # ---------------------------------------------------------------------------
+# Historical behavior: eval() is not called, so the model's dropout remains active.
 def chat(model):
     print("\nmodel trained. type something and it will try to continue it. ctrl+c to quit.\n")
     while True:
@@ -204,11 +215,13 @@ def chat(model):
             break
         if not prompt:
             continue
+        # Every prompt starts a new sequence; previous turns are not retained.
         idx = torch.tensor([encode(prompt)], dtype=torch.long, device=device)
         out = model.generate(idx, max_new_tokens=100)
         print("model:", decode(out[0].tolist()))
 
 
+# Run the example only when launched directly, not when imported by another lesson.
 if __name__ == "__main__":
     trained_model = train()
     chat(trained_model)
