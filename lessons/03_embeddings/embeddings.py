@@ -1,3 +1,6 @@
+# Lesson 3: turn token IDs into vectors and add information about position.
+# The checks inspect shapes and gradient flow; they do not teach word meanings.
+
 import math
 
 import torch
@@ -135,6 +138,7 @@ def main():
     # Artificial scalar objective to inspect gradient flow.
     # This is not a language-model training loss.
     probe_loss = learned_combined.sum()
+    # Sum gives an easy-to-predict derivative: each lookup contributes one per component.
     probe_loss.backward()
 
     token_grad = token_embedding.weight.grad
@@ -171,5 +175,6 @@ def main():
     print("\nAll embedding exercise checks passed.")
 
 
+# Run the example only when launched directly, not when imported by another lesson.
 if __name__ == "__main__":
     main()

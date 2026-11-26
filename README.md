@@ -2,10 +2,25 @@
 
 A hands-on Python and PyTorch research project exploring tokenization, embeddings, causal attention, Transformer training, and text generation.
 
-**Last updated:** October 2, 2026
+**Last updated:** October 10, 2026
 **Working branch:** develop
 
 See [Progess.md](Progess.md) for the full roadmap, experiment settings, loss history, limitations, and the preserved original report.
+
+## Authoritative documentation
+
+Maintain this root README for the project overview and root [Progess.md](Progess.md) for detailed research results and historical reports. Retrieval reads these two files directly; no editable copies are needed inside the lessons folder.
+
+The former retrieval documents are preserved in `lessons/08_rag/archives/document_snapshot_before_consolidation.zip`. Previous 79-chunk rankings describe that snapshot. Restarting semantic search builds an index from the current root documents, so chunk counts and rankings will change. Historical report sections remain historical and should not be interpreted as current status.
+
+## Latest verified progress — October 10
+
+- Saved training logs reach **5,000 total steps**, with training loss **2.0820** and validation loss **2.1131**. The final checkpoint reload check remains unconfirmed.
+- The progress report records successful weight-matched PyTorch attention output and gradient comparisons in four configurations.
+- Greedy generation still repeats words; sampled step-3,000 output is varied but not coherent. A matched step-3,000 versus step-5,000 sampling comparison is next.
+- Five-question retrieval evaluation found supporting passages for all three answerable questions within the top five. Unsupported questions still returned neighbors; abstention is unverified.
+- One standalone local Qwen supplied-evidence answer succeeded. Integrated RAG answering is unverified and paused while we improve our own decoder.
+- Windows and Mac use separate virtual environments. Model training remains CPU-based in the current script.
 
 ## Current progress
 
@@ -15,14 +30,14 @@ See [Progess.md](Progess.md) for the full roadmap, experiment settings, loss his
 | Byte-level BPE | All six test groups passed, including Unicode round trips and save/load. |
 | Library comparison | Custom BPE and Hugging Face Tokenizers both used 276-entry vocabularies and passed sample round trips. |
 | Embeddings | Token lookup, learned/sinusoidal positions, and gradient checks passed. |
-| Attention | Custom single-head and multi-head causal and gradient checks passed. |
+| Attention | Custom causal checks and weight-matched PyTorch output/gradient comparisons passed in the recorded tests. |
 | Transformer decoder | Memorized a tiny sequence with loss 0.001536 and 100% training-token accuracy. |
-| Language-model training | Resumed Tiny Shakespeare training to 3,000 total steps; validation loss 2.2393 and checkpoint reload passed. |
+| Language-model training | Saved Tiny Shakespeare logs reach 5,000 steps; validation loss 2.1131. Reload passed for earlier runs; latest reload confirmation pending. |
 | Terminal generation | Loaded saved weights and compared greedy with temperature/top-p decoding. |
 | Document retrieval | Loaded two documents, created 79 chunks, and indexed 384-dimensional embeddings with FAISS; preparation and index checks passed. |
 | RAG answer generation | Not verified. Retrieval returns passages; the cloud API test failed with HTTP 401. |
 
-The nn.MultiheadAttention reference comparison remains unconfirmed. Grounded answer generation, conversation memory, a serving API, Docker, and deployment remain pending.
+Grounded answer generation, conversation memory, a serving API, Docker, and deployment remain pending.
 
 ## Research findings
 
@@ -51,6 +66,7 @@ The small decoder reproduced hello world on four lines exactly. That was an over
 | 1,000 | 2.5064 | 2.4755 |
 | 2,000 | 2.3546 | 2.3422 |
 | 3,000 | 2.2426 | 2.2393 |
+| 5,000 | 2.0820 | 2.1131 |
 
 Both losses improved, without an obvious overfitting gap in the fixed evaluation batches. This does not establish fluent generation or performance on a final independent test set.
 
@@ -66,7 +82,7 @@ The document experiment uses 500-character chunks with 100-character overlap, se
 
 For "How many tokens were in our BPE vocabulary?", the passage explicitly stating **276 = 256 base bytes + 20 merges** ranked fourth (similarity 0.5137). Top-three retrieval missed it; top-five included it. The language-model training vocabulary is separately fixed at 256 bytes. An unrelated weather question still returned irrelevant passages, so similarity scores alone do not establish answerability.
 
-Connecting an answer model remains unfinished: the OpenRouter test returned HTTP 401, and no successful generated RAG answer has been recorded. The document copies used by retrieval are snapshots and must be refreshed separately when root documentation changes.
+Connecting an answer model remains unfinished: the OpenRouter test returned HTTP 401, and no successful generated RAG answer has been recorded. Retrieval now reads the root documents directly. The previous document snapshot is archived for reproducing earlier results.
 
 ## Baseline configuration
 
@@ -102,7 +118,7 @@ lessons/
   08_rag/retrieve.py
   08_rag/semantic_search.py
   08_rag/test_api.py
-  08_rag/documents/
+  08_rag/archives/document_snapshot_before_consolidation.zip
 ```
 
 The root minimal_chatbot.py is an earlier character-level demonstration that retrains on startup. Use the staged scripts for the newer checkpoint-based experiment.
@@ -176,4 +192,4 @@ Search prints source passages, not generated answers. Type /quit to exit. The em
 
 ## Next milestone
 
-Inspect the model and generation code before committing to longer training, and compare decoding modes using fixed prompts and settings. For Stage 8, evaluate retrieval against known answers and unrelated questions, then connect and test an answer model with citations and an insufficient-evidence response. The current 64-byte generator has not demonstrated the ability to answer from retrieved passages. Docker and deployment follow after the application works end to end.
+The source review found no obvious error in target shifting, causal masking, or sampling. Next, confirm the 5,000-step checkpoint loads and compare it with the 3,000-step checkpoint using identical prompts, seeds, and decoding settings. For Stage 8, evaluate retrieval against known answers and unrelated questions, then connect and test an answer model with citations and an insufficient-evidence response. The current 64-byte generator has not demonstrated the ability to answer from retrieved passages. Docker and deployment follow after the application works end to end.

@@ -1,3 +1,6 @@
+# Lesson 1: practice tensors, derivatives, and a small trainable linear model.
+# Choose one exercise at the command line; these examples do not train the chatbot.
+
 """Stage 1: replace each TODO, then run one exercise at a time.
 
 Usage: python lessons/01_pytorch/exercises.py tensors
@@ -29,6 +32,7 @@ def autograd():
     # TODO: Compute y = x**2 + 2*x + 1. Predict dy/dx on paper first.
     y = x**2+2*x+1
     # TODO: Ask autograd to backpropagate from y.
+    # Backpropagation computes dy/dx at x=3; it does not change x.
     y.backward()
     assert x.grad is not None, 'No gradient: did you call backward()?'
     torch.testing.assert_close(y.detach(), torch.tensor(16.))
@@ -91,6 +95,7 @@ def train(device_name):
         loss = loss_fn(prediction, target)
 
         # TODO: Compute gradients by calling backward() on loss.
+        # Compute parameter gradients; optimizer.step() below applies the update.
         loss.backward()
        
 
@@ -117,6 +122,7 @@ def train(device_name):
                                  for k, v in model.named_parameters()})
 
 
+# Run the example only when launched directly, not when imported by another lesson.
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('exercise', choices=['tensors', 'autograd', 'train'])

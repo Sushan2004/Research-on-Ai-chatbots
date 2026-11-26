@@ -1,0 +1,131 @@
+{
+  "python": "3.9.6",
+  "torch": "2.8.0",
+  "device": "cpu",
+  "threads": 1,
+  "steps": 5000,
+  "batch_size": 8,
+  "learning_rate": 0.0003,
+  "weight_decay": 0.01,
+  "seed": 42,
+  "data_seed": 456,
+  "evaluation_seed": 123,
+  "dataset_sha256": "86c4e6aa9db7c042ec79f339dcb96d42b0075e16b8fc2e86bf0ca57e2dc565ed",
+  "design": "Same initial shared weights and first 64 positions. Same sampled target endpoints. Longer context sees twice as many training tokens per update. Equal steps, not equal compute/token budget.",
+  "results": [
+    {
+      "context": 64,
+      "parameters": 136832,
+      "seconds": 27.020418041,
+      "peak_process_rss_bytes": 293584896,
+      "peak_memory_note": "macOS cumulative process high-water mark, including benchmark and previous runs; not isolated model memory",
+      "losses": {
+        "train": 2.0920605659484863,
+        "validation": 2.1739164352416993
+      },
+      "common_final_byte_validation_loss": 2.1393923461437225,
+      "common_targets": 1024,
+      "reload_exact_match": true,
+      "training_tokens": 2560000,
+      "outputs": {
+        "greedy": [
+          {
+            "prompt": "ROMEO:",
+            "continuation": "\nAnd the the the the the the the the the the the the the the the the the the the the the the the the"
+          },
+          {
+            "prompt": "JULIET:",
+            "continuation": "\nThat the the the the the the the to the the the the the the the the the the the the the the the the"
+          },
+          {
+            "prompt": "The king",
+            "continuation": " the the the the the the the the to the the the the the the the the the the the the the the the the "
+          }
+        ],
+        "sampled": [
+          {
+            "prompt": "ROMEO:",
+            "continuation": "\nThake the wee comy wherst not\nso his to inch of he the souser nom of mat fer hisins but,\nWhan dome "
+          },
+          {
+            "prompt": "JULIET:",
+            "continuation": "\nDo thou shou mold asse as ary fand you netes so fees the dorther hour for wo you fe lorts boost\nSo "
+          },
+          {
+            "prompt": "The king",
+            "continuation": " to low he dour's thirn and shee ole as a felld hour him you me,\nWis con hast he and you my the the "
+          }
+        ]
+      },
+      "generation_settings": {
+        "seed": 42,
+        "temperature": 0.8,
+        "top_p": 0.9,
+        "max_new_bytes": 100,
+        "seed_policy": "reset once per mode"
+      }
+    },
+    {
+      "context": 128,
+      "parameters": 140928,
+      "seconds": 48.060334874999995,
+      "peak_process_rss_bytes": 294486016,
+      "peak_memory_note": "macOS cumulative process high-water mark, including benchmark and previous runs; not isolated model memory",
+      "losses": {
+        "train": 2.206011438369751,
+        "validation": 2.222309446334839
+      },
+      "common_final_byte_validation_loss": 2.2095828065648675,
+      "common_targets": 1024,
+      "reload_exact_match": true,
+      "training_tokens": 5120000,
+      "outputs": {
+        "greedy": [
+          {
+            "prompt": "ROMEO:",
+            "continuation": "\nAnd the the the the the the the the the the the the thea the the the the the the the the the the th"
+          },
+          {
+            "prompt": "JULIET:",
+            "continuation": "\nThe the the the the the the the the thea the the the the the the the the the the the thear the the "
+          },
+          {
+            "prompt": "The king",
+            "continuation": " the the the the the the the theand the the the the the the the the the the the the the the the the "
+          }
+        ],
+        "sampled": [
+          {
+            "prompt": "ROMEO:",
+            "continuation": "\nTherse the hise thie, to sharthere nou the.\n\nDUSARY:\nNour bre sallot ston: whis bethe thin wis,\nI t"
+          },
+          {
+            "prompt": "JULIET:",
+            "continuation": "\nPre the shorentt otent as aral ot for, carer subuld she to ather monorys:\nSow, forit buranct oown w"
+          },
+          {
+            "prompt": "The king",
+            "continuation": "h bemat ave hort he wen he thooth worsth held sowith whe yourt\nOf no condstin my athe, sthat the he "
+          }
+        ]
+      },
+      "generation_settings": {
+        "seed": 42,
+        "temperature": 0.8,
+        "top_p": 0.9,
+        "max_new_bytes": 100,
+        "seed_policy": "reset once per mode"
+      }
+    }
+  ],
+  "benchmark": {
+    "64": {
+      "100_steps_seconds": 0.5377517089999997,
+      "estimated_5000_training_seconds": 26.887585449999985
+    },
+    "128": {
+      "100_steps_seconds": 0.9031672089999998,
+      "estimated_5000_training_seconds": 45.15836044999999
+    }
+  }
+}

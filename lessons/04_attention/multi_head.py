@@ -1,3 +1,6 @@
+# Lesson 4b: combine several causal attention heads into one representation.
+# This module is also imported by the trained decoder, so main() is only a test.
+
 import math
 
 import torch
@@ -23,6 +26,7 @@ class AttentionHead(nn.Module):
 
         # Compare every query with every key.
         # Result: [batch, sequence, sequence]
+        # Scaling limits score growth as head width increases, helping softmax avoid saturation.
         scores = (q @ k.transpose(-2, -1)) / math.sqrt(self.head_dim)
 
         # Allow attention to the current position and earlier positions.
@@ -135,5 +139,6 @@ def main():
     print("Multi-head attention checks passed.")
 
 
+# Run the example only when launched directly, not when imported by another lesson.
 if __name__ == "__main__":
     main()
